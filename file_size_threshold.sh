@@ -36,6 +36,9 @@ threshold = int(sys.argv[2])
 output_path = sys.argv[3]
 
 rows = []
+checked = 0
+
+print(f"Scanning '{root_path}' for files larger than {threshold} bytes...", file=sys.stderr, flush=True)
 
 for dirpath, _, filenames in os.walk(root_path):
     for name in filenames:
@@ -44,6 +47,9 @@ for dirpath, _, filenames in os.walk(root_path):
             size = os.path.getsize(filepath)
         except OSError:
             continue
+        checked += 1
+        if checked % 100 == 0:
+            print(f"Scanned {checked} files so far...", file=sys.stderr, flush=True)
         if size > threshold:
             rows.append((name, size, filepath))
 
@@ -53,6 +59,8 @@ with open(output_path, "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(("filename", "filesize", "filepath"))
     writer.writerows(rows)
+
+print(f"Finished scanning {checked} files; writing {len(rows)} matches.", file=sys.stderr, flush=True)
 PYCODE
 
 echo "Wrote CSV to $OUTPUT_PATH"
